@@ -1,10 +1,10 @@
 // via https://github.com/vercel/ai/blob/main/examples/next-openai/app/api/use-chat-human-in-the-loop/utils.ts
 
 import type {
-  UIMessage,
-  UIMessageStreamWriter,
+  ToolCallOptions,
   ToolSet,
-  ToolCallOptions
+  UIMessage,
+  UIMessageStreamWriter
 } from "ai";
 import { convertToModelMessages, isStaticToolUIPart } from "ai";
 import { APPROVAL } from "./shared";
@@ -97,6 +97,115 @@ export async function processToolCalls<Tools extends ToolSet>({
   );
 
   return processedMessages;
+}
+
+/**
+ * Format ISO 8601 datetime to readable time (e.g., "12:25 PM")
+ */
+function formatTime(isoString: string): string {
+  const match = isoString.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!match) return isoString;
+  const [, , , , hours, minutes] = match;
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+}
+
+/**
+ * Format ISO 8601 duration to readable format (e.g., "1h 30m")
+ */
+function formatDuration(isoDuration: string): string {
+  const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+  if (!match) return isoDuration;
+  const hours = match[1] ? `${match[1]}h` : "";
+  const minutes = match[2] ? `${match[2]}m` : "";
+  return `${hours} ${minutes}`.trim();
+}
+
+/**
+ * Format flight search results into human-readable text
+ */
+export function formatFlightResults(data: unknown): string {
+  if (typeof data !== "object" || data === null) return JSON.stringify(data);
+
+  const flightData = data as {
+    totalOffers?: number;
+    offers?: Array<{
+      offerId: string;
+      price: { total: string; currency: string };
+      airlines: string[];
+      itineraries: Array<{
+        duration: string;
+        segments: Array<{
+          departure: string;
+          arrival: string;
+          carrier: string;
+          flightNumber: string;
+          duration: string;
+          stops: number;
+        }>;
+      }>;
+      seatsAvailable: number;
+    }>;
+    dictionaries?: {
+      carriers?: Record<string, string>;
+    };
+  };
+
+  if (!flightData.offers || !Array.isArray(flightData.offers)) {
+    return JSON.stringify(data);
+  }
+
+  const carriers = flightData.dictionaries?.carriers || {};
+
+  const lines: string[] = [];
+  lines.push(
+    `Found ${flightData.totalOffers || flightData.offers.length} flights:\n`
+  );
+
+  for (const offer of flightData.offers) {
+    const airlineCode = offer.airlines?.[0] || "Unknown";
+    const airlineName = carriers[airlineCode] || airlineCode;
+    const price = `${offer.price.currency === "EUR" ? "€" : "$"}${offer.price.total}`;
+
+    for (const itinerary of offer.itineraries || []) {
+      const totalDuration = formatDuration(itinerary.duration);
+      const segments = itinerary.segments || [];
+
+      if (segments.length === 1) {
+        const seg = segments[0];
+        const depTime = formatTime(
+          seg.departure.split(" at ")[1] || seg.departure
+        );
+        const arrTime = formatTime(seg.arrival.split(" at ")[1] || seg.arrival);
+        lines.push(`• ${airlineName} ${seg.flightNumber} - ${price}`);
+        lines.push(
+          `  Departs: ${depTime} → Arrives: ${arrTime} (${totalDuration}, nonstop)`
+        );
+        lines.push(`  Seats available: ${offer.seatsAvailable}`);
+        lines.push("");
+      } else {
+        lines.push(`• ${airlineName} - ${price} (${segments.length} stops)`);
+        for (const seg of segments) {
+          const depTime = formatTime(
+            seg.departure.split(" at ")[1] || seg.departure
+          );
+          const arrTime = formatTime(
+            seg.arrival.split(" at ")[1] || seg.arrival
+          );
+          lines.push(
+            `  ${seg.flightNumber}: ${depTime} → ${arrTime} (${formatDuration(seg.duration)})`
+          );
+        }
+        lines.push(`  Total duration: ${totalDuration}`);
+        lines.push(`  Seats available: ${offer.seatsAvailable}`);
+        lines.push("");
+      }
+    }
+  }
+
+  return lines.join("\n");
 }
 
 /**

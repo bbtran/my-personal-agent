@@ -23,8 +23,8 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.10",
-		"@cloudflare/vite-plugin": "1.19.0",
-		"@cloudflare/vitest-pool-workers": "^0.11.1",
+		"@cloudflare/vite-plugin": "^1.23.1",
+		"@cloudflare/vitest-pool-workers": "^0.12.10",
 		"@cloudflare/workers-types": "^4.20251231.0",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/node": "^25.2.2",
@@ -42,21 +42,22 @@
 	"dependencies": {
 		"@ai-sdk/openai": "^3.0.2",
 		"@ai-sdk/react": "^3.0.5",
-		"@cloudflare/ai-chat": "^0.0.3",
+		"@cloudflare/ai-chat": "^0.0.7",
 		"@phosphor-icons/react": "^2.1.10",
 		"@radix-ui/react-avatar": "^1.1.11",
 		"@radix-ui/react-dropdown-menu": "^2.1.16",
 		"@radix-ui/react-slot": "^1.2.4",
 		"@radix-ui/react-switch": "^1.2.6",
-		"agents": "^0.3.3",
+		"agents": "^0.4.0",
 		"ai": "^6.0.5",
+		"ai-gateway-provider": "^3.1.1",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"marked": "^17.0.1",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3",
-		"streamdown": "^1.6.10",
+		"streamdown": "^2.2.0",
 		"tailwind-merge": "^3.4.0",
-		"workers-ai-provider": "^3.0.2"
+		"workers-ai-provider": "^3.0.4"
 	}
 }

@@ -20,8 +20,12 @@
 	"durable_objects": {
 		"bindings": [
 			{
-				"name": "Chat",
-				"class_name": "Chat"
+				"name": "ChatAgent",
+				"class_name": "ChatAgent"
+			},
+			{
+				"name": "FlightAgent",
+				"class_name": "FlightAgent"
 			}
 		]
 	},
@@ -30,6 +34,21 @@
 			"tag": "v1",
 			"new_sqlite_classes": [
 				"Chat"
+			]
+		},
+		{
+			"tag": "v2",
+			"new_sqlite_classes": [
+				"FlightAgent"
+			]
+		},
+		{
+			"tag": "v3",
+			"renamed_classes": [
+				{
+					"from": "Chat",
+					"to": "ChatAgent"
+				}
 			]
 		}
 	],

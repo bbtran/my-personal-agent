@@ -110,6 +110,11 @@ export function ToolInvocationCard({
               <pre className="bg-background/80 p-2 rounded-md text-xs overflow-auto whitespace-pre-wrap wrap-break-word max-w-[450px]">
                 {(() => {
                   const result = toolUIPart.output;
+                  // Handle string results directly
+                  if (typeof result === "string") {
+                    return result;
+                  }
+                  // Handle MCP-style content array
                   if (isToolResultWithContent(result)) {
                     return result.content
                       .map((item: { type: string; text: string }) => {
@@ -128,6 +133,17 @@ export function ToolInvocationCard({
                       })
                       .join("\n");
                   }
+                  // Handle arrays (e.g., scheduled tasks list)
+                  if (Array.isArray(result)) {
+                    return result
+                      .map((item, idx) =>
+                        typeof item === "object"
+                          ? `${idx + 1}. ${JSON.stringify(item)}`
+                          : `${idx + 1}. ${item}`
+                      )
+                      .join("\n");
+                  }
+                  // Fallback to JSON
                   return JSON.stringify(result, null, 2);
                 })()}
               </pre>
